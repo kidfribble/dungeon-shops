@@ -7,10 +7,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 
 import { useEffect, useState } from 'react';
-import { useSupabaseClient } from '@/utils/supabaseClient';
-
-const client = useSupabaseClient();
-
+import { supabase } from '@/utils/supabaseClient';
 import {
   ClerkProvider,
   SignInButton,
@@ -45,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const fetchData = async () => {
       setLoading(true);
       try {
-        let { data, error } = await client.from('shopkeepers').select('*');
+        let { data, error } = await supabase.from('shopkeepers').select('*');
         if (error) throw error;
         setShopData(data || []); // Ensures shopData is always an array
       } catch (error) {

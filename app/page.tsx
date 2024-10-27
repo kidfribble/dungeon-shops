@@ -1,10 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSupabaseClient } from '@/utils/supabaseClient';
-
-const client = useSupabaseClient();
-
+import { supabase } from '@/utils/supabaseClient';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Table, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 
@@ -38,7 +35,7 @@ export default function Home() {
       const fetchShopkeepers = async () => {
         setLoading(true);
         try {
-          const { data, error } = await client
+          const { data, error } = await supabase
             .from('shopkeepers')
             .select('*')
             .eq('location', selectedLocation);
@@ -60,7 +57,7 @@ export default function Home() {
       const fetchInventory = async () => {
         setLoading(true);
         try {
-          const { data, error } = await client
+          const { data, error } = await supabase
             .from('items')
             .select('*')
             .eq('shopkeeper_id', selectedShopkeeper);

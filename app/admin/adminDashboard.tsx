@@ -1,9 +1,7 @@
 "use client";
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
-import { useSupabaseClient } from '@/utils/supabaseClient';
-
-const client = useSupabaseClient();
+import { supabase } from '@/utils/supabaseClient';
 
 export default function AdminDashboard() {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -13,7 +11,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (isLoaded && isSignedIn && user?.publicMetadata?.isAdmin) {
       const fetchPlayers = async () => {
-        let { data, error } = await client.from('players').select('*');
+        let { data, error } = await supabase.from('players').select('*');
         if (!error) setPlayers(data ?? []);
       };
       fetchPlayers();
