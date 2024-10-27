@@ -7,7 +7,17 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/utils/supabaseClient';
+import { useSupabaseClient } from '@/utils/supabaseClient';
+
+const client = useSupabaseClient();
+
+import {
+  ClerkProvider,
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton
+} from '@clerk/nextjs'
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -35,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const fetchData = async () => {
       setLoading(true);
       try {
-        let { data, error } = await supabase.from('shopkeepers').select('*');
+        let { data, error } = await client.from('shopkeepers').select('*');
         if (error) throw error;
         setShopData(data || []); // Ensures shopData is always an array
       } catch (error) {
@@ -49,16 +59,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   
 
   return (
+    <ClerkProvider>
     <html lang="en">
       <body>
-        <SidebarProvider>
-          <AppSidebar />
-          <main>
-            <SidebarTrigger />
-            {loading ? <div>Loading...</div> : children}
-          </main>
-        </SidebarProvider>
+        <SignedOut>
+          <SignInButton />
+        </SignedOut>
+        <SignedIn>            
+          <SidebarProvider>
+            <AppSidebar />
+            <main>
+              <SidebarTrigger />
+              {loading ? <div>Loading...</div> : children}
+            </main>
+          </SidebarProvider>
+          <UserButton />
+        </SignedIn>
       </body>
     </html>
+    </ClerkProvider>
   )
 }
