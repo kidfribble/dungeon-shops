@@ -5,6 +5,9 @@ import "./globals.css";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 
+import { useEffect, useState } from 'react';
+import { supabase } from '@/utils/supabaseClient';
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -22,6 +25,33 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+
+  interface Shopkeeper {
+    id: number; // Update this to match your actual data structure
+    name: string; // Update this to match your actual data structure
+    // Add other fields as necessary
+  }
+
+  const [shopData, setShopData] = useState<Shopkeeper[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        let { data, error } = await supabase.from('shopkeepers').select('*');
+        if (error) throw error;
+        setShopData(data || []); // Ensures shopData is always an array
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+  
+
   return (
     <html>
       <body>
@@ -29,7 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AppSidebar />
           <main>
             <SidebarTrigger />
-            {children}
+            {loading ? <div>Loading...</div> : children}
           </main>
         </SidebarProvider>
       </body>
