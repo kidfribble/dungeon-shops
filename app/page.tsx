@@ -1,101 +1,131 @@
-import Image from "next/image";
+"use client"; // This marks the component as a Client Component
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+
+type NPC = keyof typeof npcInventories;
+
+const npcInventories = {"Meredin Sandyfoot": [{"Item Name": "Light hammer", "Price": "2 gp", "AC": "N/A", "Damage": "1d4 Bludgeon", "Weight": "2 lb.", "Type": "Simple Melee Weapons", "Properties": "Light, Thrown (20/60)"}, {"Item Name": "War pick", "Price": "5 gp", "AC": "N/A", "Damage": "1d8 Piercing", "Weight": "2 lb.", "Type": "Martial Melee Weapons", "Properties": "-"}, {"Item Name": "Warhammer", "Price": "15 gp", "AC": "N/A", "Damage": "1d8 Bludgeon", "Weight": "2 lb.", "Type": "Martial Melee Weapons", "Properties": "Versatile (1d10)"}, {"Item Name": "Bucket", "Price": "5 cp", "AC": "N/A", "Damage": "N/A", "Weight": "2 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Hammer", "Price": "1 gp", "AC": "N/A", "Damage": "N/A", "Weight": "3 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Hammer, Sledge", "Price": "2 gp", "AC": "N/A", "Damage": "N/A", "Weight": "10 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Ladder (10-foot)", "Price": "1 sp", "AC": "N/A", "Damage": "N/A", "Weight": "25 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Pick, miner's", "Price": "2 gp", "AC": "N/A", "Damage": "N/A", "Weight": "10 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Rope, hempen (50 feet)", "Price": "1 gp", "AC": "N/A", "Damage": "N/A", "Weight": "10 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Rope, silk (50 feet)", "Price": "10 gp", "AC": "N/A", "Damage": "N/A", "Weight": "5 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Shovel", "Price": "2 gp", "AC": "N/A", "Damage": "N/A", "Weight": "5 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Rope of Climbing", "Price": "350 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Uncommon"}, {"Item Name": "Hammer of Thunderbolts", "Price": "8,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Weapon", "Properties": "Legendary - Requires Attunement"}, {"Item Name": "Rope of Entanglement", "Price": "600 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wonderous", "Properties": "Rare"}, {"Item Name": "Cartographer's tools", "Price": "15 gp", "AC": "N/A", "Damage": "N/A", "Weight": "6 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Cobbler's tools", "Price": "5 gp", "AC": "N/A", "Damage": "N/A", "Weight": "5 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Glassblower's tools", "Price": "30 gp", "AC": "N/A", "Damage": "N/A", "Weight": "5 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Jeweler's tools", "Price": "25 gp", "AC": "N/A", "Damage": "N/A", "Weight": "2 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Leatherworker's tools", "Price": "5 gp", "AC": "N/A", "Damage": "N/A", "Weight": "5 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Mason's tools", "Price": "10 gp", "AC": "N/A", "Damage": "N/A", "Weight": "8 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Carpenter's tools", "Price": "8 gp", "AC": "N/A", "Damage": "N/A", "Weight": "6 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Potter's tools", "Price": "10 gp", "AC": "N/A", "Damage": "N/A", "Weight": "3 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Smith's tools", "Price": "20 gp", "AC": "N/A", "Damage": "N/A", "Weight": "8 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Tinkerer's tools", "Price": "50 gp", "AC": "N/A", "Damage": "N/A", "Weight": "10 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Weaver's tools", "Price": "1 gp", "AC": "N/A", "Damage": "N/A", "Weight": "5 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Navigator's tools", "Price": "25 gp", "AC": "N/A", "Damage": "N/A", "Weight": "2 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Woodcarver's tools", "Price": "1 gp", "AC": "N/A", "Damage": "N/A", "Weight": "5 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Thieve's tools", "Price": "25 gp", "AC": "N/A", "Damage": "N/A", "Weight": "1 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Forgery kit", "Price": "15 gp", "AC": "N/A", "Damage": "N/A", "Weight": "5 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}], "Ozamata": [{"Item Name": "Net", "Price": "1 gp", "AC": "N/A", "Damage": "N/A", "Weight": "3 lb.", "Type": "Martial Ranged Weapons", "Properties": "Special, Thrown (5/15)"}, {"Item Name": "Alchemist's Fire (flask)", "Price": "50 gp", "AC": "N/A", "Damage": "N/A", "Weight": "1 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Barrel", "Price": "2 gp", "AC": "N/A", "Damage": "N/A", "Weight": "70 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Flask or Tankard", "Price": "1 gp", "AC": "N/A", "Damage": "N/A", "Weight": "4 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Flask or Tankard", "Price": "2 cp", "AC": "N/A", "Damage": "N/A", "Weight": "1 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Grappling Hook", "Price": "2 gp", "AC": "N/A", "Damage": "N/A", "Weight": "4 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Healer's kit", "Price": "5 gp", "AC": "N/A", "Damage": "N/A", "Weight": "3 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Holy water (flask)", "Price": "25 gp", "AC": "N/A", "Damage": "N/A", "Weight": "1 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Oil (flask)", "Price": "1 sp", "AC": "N/A", "Damage": "N/A", "Weight": "1 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Pot, iron", "Price": "2 gp", "AC": "N/A", "Damage": "N/A", "Weight": "10 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Potion of healing", "Price": "50 gp", "AC": "N/A", "Damage": "N/A", "Weight": ".5 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Scale, merchant's", "Price": "5 gp", "AC": "N/A", "Damage": "N/A", "Weight": "3 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Trident of Fish Command", "Price": "400 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Uncommon"}, {"Item Name": "Dragon Scale Mail", "Price": "4,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Armor", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Nine Lives Stealer (Fully Charged)", "Price": "7,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Weapon", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Rod of Alertness", "Price": "5,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Rod", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Brewer's supplies", "Price": "20 gp", "AC": "N/A", "Damage": "N/A", "Weight": "9 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Potter's tools", "Price": "10 gp", "AC": "N/A", "Damage": "N/A", "Weight": "3 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}], "The Juggler": [{"Item Name": "Dagger", "Price": "2 gp", "AC": "N/A", "Damage": "1d4 Piercing", "Weight": "1 lb.", "Type": "Simple Melee Weapons", "Properties": "Finesse, Light, Thrown (20/60)"}, {"Item Name": "Case, Map and Scroll", "Price": "1 gp", "AC": "N/A", "Damage": "N/A", "Weight": "1 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Grappling Hook", "Price": "2 gp", "AC": "N/A", "Damage": "N/A", "Weight": "4 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Hunting Trap", "Price": "5 gp", "AC": "N/A", "Damage": "N/A", "Weight": "25 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Poison, basic (vial)", "Price": "100 gp", "AC": "N/A", "Damage": "N/A", "Weight": "-", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Rope, hempen (50 feet)", "Price": "1 gp", "AC": "N/A", "Damage": "N/A", "Weight": "10 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Rope, silk (50 feet)", "Price": "10 gp", "AC": "N/A", "Damage": "N/A", "Weight": "5 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Spell Scroll Level 0", "Price": "25 gp", "AC": "-", "Damage": "-", "Weight": "-", "Type": "Magic - Consumable - Scroll", "Properties": "Common"}, {"Item Name": "Spell Scroll Level 1", "Price": "35 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Common"}, {"Item Name": "Spell Scroll Level 2", "Price": "280 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Uncommon"}, {"Item Name": "Spell Scroll Level 3", "Price": "570 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Uncommon"}, {"Item Name": "Spell Scroll Level 4", "Price": "2,640 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Rare"}, {"Item Name": "Spell Scroll Level 5", "Price": "5,280 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Rare"}, {"Item Name": "Spell Scroll Level 6", "Price": "15,560 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Very Rare"}, {"Item Name": "Spell Scroll Level 7", "Price": "26,220 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Very Rare"}, {"Item Name": "Spell Scroll Level 8", "Price": "52,240 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Very Rare"}, {"Item Name": "Spell Scroll Level 9", "Price": "253,360 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Legendary"}, {"Item Name": "Scroll of Protection", "Price": "200 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Rare"}, {"Item Name": "Rope of Climbing", "Price": "350 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Uncommon"}, {"Item Name": "Cloak of Elvenkind", "Price": "500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Periapt of Proof Against Poison", "Price": "1,500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Rare"}, {"Item Name": "Cloak of the Bat", "Price": "1,300 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Cloak of the Manta Ray", "Price": "800 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Uncommon"}, {"Item Name": "Mirror of Life Trapping", "Price": "18,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Very Rare"}, {"Item Name": "Cloak of Invisibility", "Price": "50,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Legendary - Requires Attunement"}, {"Item Name": "Cloak of Protection", "Price": "1,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wonderous", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Dagger of Venom", "Price": "800 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Weapon", "Properties": "Rare"}, {"Item Name": "Rope of Entanglement", "Price": "600 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wonderous", "Properties": "Rare"}, {"Item Name": "Thieve's tools", "Price": "25 gp", "AC": "N/A", "Damage": "N/A", "Weight": "1 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}, {"Item Name": "Poisoner's kit", "Price": "50 gp", "AC": "N/A", "Damage": "N/A", "Weight": "2 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}], "Library of Spheres": [{"Item Name": "Wand", "Price": "10 gp", "AC": "N/A", "Damage": "N/A", "Weight": "1 lb.", "Type": "Arcane Focus", "Properties": "N/A"}, {"Item Name": "Book", "Price": "25 gp", "AC": "N/A", "Damage": "N/A", "Weight": "5 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Case, Map and Scroll", "Price": "1 gp", "AC": "N/A", "Damage": "N/A", "Weight": "1 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Yew Wand", "Price": "10 gp", "AC": "N/A", "Damage": "N/A", "Weight": "1 lb.", "Type": "Druidic Focus", "Properties": "N/A"}, {"Item Name": "Spellbook", "Price": "50 gp", "AC": "N/A", "Damage": "N/A", "Weight": "3 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Spell Scroll Level 0", "Price": "25 gp", "AC": "-", "Damage": "-", "Weight": "-", "Type": "Magic - Consumable - Scroll", "Properties": "Common"}, {"Item Name": "Spell Scroll Level 1", "Price": "35 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Common"}, {"Item Name": "Spell Scroll Level 2", "Price": "280 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Uncommon"}, {"Item Name": "Spell Scroll Level 3", "Price": "570 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Uncommon"}, {"Item Name": "Spell Scroll Level 4", "Price": "2,640 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Rare"}, {"Item Name": "Spell Scroll Level 5", "Price": "5,280 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Rare"}, {"Item Name": "Spell Scroll Level 6", "Price": "15,560 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Very Rare"}, {"Item Name": "Spell Scroll Level 7", "Price": "26,220 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Very Rare"}, {"Item Name": "Spell Scroll Level 8", "Price": "52,240 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Very Rare"}, {"Item Name": "Spell Scroll Level 9", "Price": "253,360 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Legendary"}, {"Item Name": "Scroll of Protection", "Price": "200 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Scroll", "Properties": "Rare"}, {"Item Name": "Wand of Magic Detection", "Price": "500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wand", "Properties": "Uncommon"}, {"Item Name": "Wand of Secrets", "Price": "250 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wand", "Properties": "Uncommon"}, {"Item Name": "Portable Hole", "Price": "4,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Rare"}, {"Item Name": "Wand of Binding", "Price": "4,500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wand", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Wand of Enemy Detection", "Price": "3,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wand", "Properties": "Rare"}, {"Item Name": "Wand of Fear", "Price": "2,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wand", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Wand of Fireballs", "Price": "5,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wand", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Wand of Lightning Bolts", "Price": "3,500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wand", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Wand of Magic Missiles", "Price": "1,500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wand", "Properties": "Uncommon"}, {"Item Name": "Wand of Paralysis", "Price": "5,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wand", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Wand of Polymorph", "Price": "20,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wand", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Wand of the War Mage +1", "Price": "700 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wand", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Wand of the War Mage +2", "Price": "2,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wand", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Wand of the War Mage +3", "Price": "8,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wand", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Wand of Web", "Price": "2,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wand", "Properties": "Uncommon - Requires Attunement"}], "Festival Grounds": [{"Item Name": "Ring Mail", "Price": "30 gp", "AC": "14", "Damage": "N/A", "Weight": "40 lb.", "Type": "Heavy Armor", "Properties": "Disadvantage on Stealth"}, {"Item Name": "Ball Bearings (bag of 1000)", "Price": "1 gp", "AC": "N/A", "Damage": "N/A", "Weight": "2 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Signel ring", "Price": "5 gp", "AC": "N/A", "Damage": "N/A", "Weight": "-", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Boots of Striding and Springing", "Price": "400 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Ring of Mind Shielding", "Price": "2,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Ring of Invisibility", "Price": "10,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Legendary - Requires Attunement"}, {"Item Name": "Ring of X-Ray Vision", "Price": "3,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Ring of Telekinesis", "Price": "4,800 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Ring of Three Wishes", "Price": "150,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Legendary - Requires Attunement"}, {"Item Name": "Ring of Air Elemental Command", "Price": "35,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Legendary"}, {"Item Name": "Ring of Earth Elemental Command", "Price": "31,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Legendary - Requires Attunement"}, {"Item Name": "Ring of Animal Influence", "Price": "1,350 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Rare"}, {"Item Name": "Ring of Swimming", "Price": "300 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Uncommon"}, {"Item Name": "Ring of Jumping", "Price": "500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Ring of Water Walking", "Price": "450 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Uncommon"}, {"Item Name": "Ring of Warmth", "Price": "350 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Gloves of Missile Snaring", "Price": "450 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wonderous", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Prayer Bead - Curing", "Price": "1,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wonderous", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Ring of Evasion", "Price": "2,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Ring", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Ring of Feather Falling", "Price": "800 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Ring", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Ring of Fire Elemental Command", "Price": "15,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Ring", "Properties": "Legendary - Requires Attunement"}, {"Item Name": "Ring of Protection", "Price": "2,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Ring", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Ring of Regeneration", "Price": "10,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Ring", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Ring of Resistance", "Price": "1,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Ring", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Ring of Shooting Stars", "Price": "8,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Ring", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Ring of Spell Storing", "Price": "3,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Ring", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Ring of Spell Turning", "Price": "20,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Ring", "Properties": "Legendary - Requires Attunement"}, {"Item Name": "Ring of the Ram", "Price": "1,500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Ring", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Ring of Water Elemental Command", "Price": "20,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Ring", "Properties": "Legendary - Requires Attunement"}, {"Item Name": "Staff of Withering", "Price": "800 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Staff", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Sword of Answering", "Price": "30,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Weapon", "Properties": "Legendary - Requires Attunement"}], "Man O' War Restaurant": [{"Item Name": "Healer's kit", "Price": "5 gp", "AC": "N/A", "Damage": "N/A", "Weight": "3 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Holy water (flask)", "Price": "25 gp", "AC": "N/A", "Damage": "N/A", "Weight": "1 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Potion of healing", "Price": "50 gp", "AC": "N/A", "Damage": "N/A", "Weight": ".5 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Scale, merchant's", "Price": "5 gp", "AC": "N/A", "Damage": "N/A", "Weight": "3 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Waterskin", "Price": "2 sp", "AC": "N/A", "Damage": "N/A", "Weight": "(Full) 5 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Cap of Water Breathing", "Price": "400 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Decanter of Endless Water", "Price": "500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Uncommon"}, {"Item Name": "Ring of Water Walking", "Price": "450 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Uncommon"}, {"Item Name": "Bowl of Commanding Water Elementals", "Price": "8,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Summons / Pets - Wonderous", "Properties": "Rare"}, {"Item Name": "Belt of Frost Giant Strength", "Price": "10,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wonderous", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Dragon Scale Mail", "Price": "4,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Armor", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Frost Brand", "Price": "2,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Weapon", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Nine Lives Stealer (Fully Charged)", "Price": "7,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Weapon", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Ring of Water Elemental Command", "Price": "20,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Ring", "Properties": "Legendary - Requires Attunement"}, {"Item Name": "Rod of Alertness", "Price": "5,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Rod", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Staff of Frost", "Price": "20,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Staff", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Brewer's supplies", "Price": "20 gp", "AC": "N/A", "Damage": "N/A", "Weight": "9 lb.", "Type": "Artisan's Tools", "Properties": "N/A"}], "Royal Theater Company": [{"Item Name": "Horn of Blasting", "Price": "450 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Wonderous", "Properties": "Rare"}, {"Item Name": "Manual of Sharpened Mind", "Price": "55,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Consumable - Wonderous", "Properties": "Very Rare"}, {"Item Name": "Silver Horn of Valhalla", "Price": "5,600 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Summons / Pets - Wonderous", "Properties": "Rare"}, {"Item Name": "Brass Horn of Valhalla", "Price": "8,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Summons / Pets - Wonderous", "Properties": "Rare"}, {"Item Name": "Bronze Horn of Valhalla", "Price": "11,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Summons / Pets - Wonderous", "Properties": "Very Rare"}, {"Item Name": "Iron Horn of Valhalla", "Price": "14,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Summons / Pets - Wonderous", "Properties": "Legendary"}, {"Item Name": "Instrument of the Bards - Anstruth Harp", "Price": "5,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wonderous", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Instrument of the Bards - Canaith Mandolin", "Price": "2,500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wonderous", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Instrument of the Bards - Cli Lyre", "Price": "2,500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wonderous", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Instrument of the Bards - Doss Lute", "Price": "1,500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wonderous", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Instrument of the Bards - Fochulan Bandlore", "Price": "1,500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wonderous", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Instrument of the Bards - Ollamh Harp", "Price": "70,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wonderous", "Properties": "Legendary - Requires Attunement"}, {"Item Name": "Sword of Sharpness", "Price": "1,200 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Weapon", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Drum", "Price": "6 gp", "AC": "N/A", "Damage": "N/A", "Weight": "3 lb.", "Type": "Musical instrument", "Properties": "N/A"}, {"Item Name": "Flute", "Price": "2 gp", "AC": "N/A", "Damage": "N/A", "Weight": "1 lb.", "Type": "Musical instrument", "Properties": "N/A"}, {"Item Name": "Lute", "Price": "35 gp", "AC": "N/A", "Damage": "N/A", "Weight": "2 lb.", "Type": "Musical instrument", "Properties": "N/A"}, {"Item Name": "Lyre", "Price": "30 gp", "AC": "N/A", "Damage": "N/A", "Weight": "2 lb.", "Type": "Musical instrument", "Properties": "N/A"}, {"Item Name": "Horn", "Price": "3 gp", "AC": "N/A", "Damage": "N/A", "Weight": "2 lb.", "Type": "Musical instrument", "Properties": "N/A"}, {"Item Name": "Pan Flute", "Price": "12 gp", "AC": "N/A", "Damage": "N/A", "Weight": "2 lb.", "Type": "Musical instrument", "Properties": "N/A"}], "Temple District Vendors": [{"Item Name": "Breastplate", "Price": "400 gp", "AC": "14 + Dex(max2)", "Damage": "N/A", "Weight": "20 lb.", "Type": "Medium Armor", "Properties": "N/A"}, {"Item Name": "Half Plate", "Price": "750 gp", "AC": "15 + Dex(max2)", "Damage": "N/A", "Weight": "40 lb.", "Type": "Medium Armor", "Properties": "Disadvantage on Stealth"}, {"Item Name": "Plate", "Price": "1500 gp", "AC": "18", "Damage": "N/A", "Weight": "65 lb.", "Type": "Heavy Armor", "Properties": "Disadvantage on Stealth - Strength 15"}, {"Item Name": "Shields", "Price": "10 gp", "AC": "N/A", "Damage": "N/A", "Weight": "6 lb.", "Type": "Heavy Armor", "Properties": "N/A"}, {"Item Name": "Amulet ", "Price": "5 gp", "AC": "N/A", "Damage": "N/A", "Weight": " 1 Ib", "Type": "Holy Symbol", "Properties": "N/A"}, {"Item Name": "Holy water (flask)", "Price": "25 gp", "AC": "N/A", "Damage": "N/A", "Weight": "1 lb.", "Type": "Adventuring Gear", "Properties": "N/A"}, {"Item Name": "Amulet of Proof Against Detection and Location", "Price": "1,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Amulet of the Planes", "Price": "90,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Wonderous", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Ring of Mind Shielding", "Price": "2,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Non-Combat - Ring", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "(+1) Armor", "Price": "1,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat - Armor", "Properties": "Rare"}, {"Item Name": "(+1) Shield", "Price": "500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat - Armor", "Properties": "Uncommon"}, {"Item Name": "(+2) Armor", "Price": "5,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat - Armor", "Properties": "Very Rare"}, {"Item Name": "(+2) Shield", "Price": "2,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat - Armor", "Properties": "Rare"}, {"Item Name": "(+3) Armor", "Price": "30,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat - Armor", "Properties": "Legendary"}, {"Item Name": "(+3) Shield", "Price": "20,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat - Armor", "Properties": "Legendary"}, {"Item Name": "Adamantine Armor", "Price": "Armor + 500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat - Armor", "Properties": "Uncommon"}, {"Item Name": "Amulet of Health", "Price": "3,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat - Wonderous", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Animated Shield", "Price": "4,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat - Armor", "Properties": "Very Rare - Requires Attunement"}, {"Item Name": "Armor of Invulnerability", "Price": "50,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat - Armor", "Properties": "Legendary - Requires Attunement"}, {"Item Name": "Armor of Resistance", "Price": "Armor + 500gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat - Armor", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Arrow-Catching Shield", "Price": "3,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat - Armor", "Properties": "Rare - Requires Attunement"}, {"Item Name": "Brooch of Shielding", "Price": "500 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Wonderous", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Dwarven Plate", "Price": "6,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Armor", "Properties": "Very Rare"}, {"Item Name": "Glamoured Armor", "Price": "2,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Armor", "Properties": "Rare"}, {"Item Name": "Holy Avenger", "Price": "90,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Weapon", "Properties": "Legendary - Requires Attunement"}, {"Item Name": "Mariner's Armor", "Price": "Armor + 200 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Armor", "Properties": "Uncommon"}, {"Item Name": "Mithral Armor", "Price": "Armor + 800 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Armor", "Properties": "Uncommon"}, {"Item Name": "Plate Armor of Etherealness", "Price": "48,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Armor", "Properties": "Legendary - Requires Attunement"}, {"Item Name": "Sentinel Shield", "Price": "800 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Armor", "Properties": "Uncommon - Requires Attunement"}, {"Item Name": "Spellguard Shield", "Price": "15,000 gp", "AC": "N/A", "Damage": "N/A", "Weight": "N/A", "Type": "Magic - Combat -Armor", "Properties": "Very Rare - Requires Attunement"}]};
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  const [selectedNPC, setSelectedNPC] = useState<NPC | null>(null);
+  const [gold, setGold] = useState(20000); // Default gold pieces
+
+  const handleBuyItem = (price: string) => {
+    const priceInGp = parseFloat(price.replace(/[^\d.-]/g, ''));
+    if (price.includes('sp')) {
+      // Convert silver pieces to gold pieces (assuming 10sp = 1gp)
+      const priceInSp = parseFloat(price.replace(/[^\d.-]/g, ''));
+      setGold((prevGold) => prevGold - priceInSp / 10);
+    } else if (gold >= priceInGp) {
+      setGold((prevGold) => prevGold - priceInGp);
+    } else {
+      alert("Not enough gold!");
+    }
+  };
+
+  const displayInventory = (npc: NPC) => {
+    const inventory = npcInventories[npc].map((item, index) => (
+      <TableRow key={index}>
+        <TableCell>{item["Item Name"]}</TableCell>
+        <TableCell>{item["Price"]}</TableCell>
+        <TableCell>{item["Damage"]}</TableCell>
+        <TableCell>{item["Weight"]}</TableCell>
+        <TableCell>{item["Properties"]}</TableCell>
+        <TableCell>
+          <Button onClick={() => handleBuyItem(item["Price"])}>Buy</Button>
+        </TableCell>
+      </TableRow>
+    ));
+    return (
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Item Name</TableCell>
+            <TableCell>Price</TableCell>
+            <TableCell>Damage</TableCell>
+            <TableCell>Weight</TableCell>
+            <TableCell>Properties</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>{inventory}</TableBody>
+      </Table>
+    );
+  };
+  return (
+    <div className="flex">
+    <Sidebar className="w-1/4 h-screen bg-gray-800 p-4 text-white">
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Temple District</SidebarGroupLabel>
+        <SidebarMenuItem onClick={() => setSelectedNPC('Ozamata')}>Ozamata</SidebarMenuItem>
+        <SidebarMenuItem onClick={() => setSelectedNPC('The Juggler')}>The Juggler</SidebarMenuItem>
+        <SidebarMenuItem onClick={() => setSelectedNPC('Library of Spheres')}>Library of Spheres</SidebarMenuItem>
+        <SidebarMenuItem onClick={() => setSelectedNPC('Festival Grounds')}>Festival Grounds</SidebarMenuItem>
+        <SidebarMenuItem onClick={() => setSelectedNPC("Man O' War Restaurant")}>Man O' War Restaurant</SidebarMenuItem>
+        <SidebarMenuItem onClick={() => setSelectedNPC('Royal Theater Company')}>Royal Theater Company</SidebarMenuItem>
+        <SidebarMenuItem onClick={() => setSelectedNPC('Temple District Vendors')}>Temple District Vendors</SidebarMenuItem>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Mages Guildhall</SidebarGroupLabel>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Royal Theatrical Company</SidebarGroupLabel>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>The Man-o'-War</SidebarGroupLabel>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Red Masks Guildhouse</SidebarGroupLabel>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Lesser Market</SidebarGroupLabel>
+          <SidebarMenuItem onClick={() => setSelectedNPC('Meredin Sandyfoot')}>Meredin Sandyfoot</SidebarMenuItem>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>The Happy Beholder</SidebarGroupLabel>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Festival Grounds</SidebarGroupLabel>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Elmandar's Star Charts</SidebarGroupLabel>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Valkan's Legion</SidebarGroupLabel>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Library of the Spheres</SidebarGroupLabel>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>The Rockrat</SidebarGroupLabel>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Naval Base</SidebarGroupLabel>
+        </SidebarGroup>
+
+      </SidebarContent>
+    </Sidebar>
+    <div className="flex-grow p-8">
+      <h1 className="text-4xl font-bold text-center mb-8">{selectedNPC} Item Shop</h1>
+      <h2 className="text-2xl text-center mb-4">Gold Remaining: {gold.toFixed(2)} gp</h2>
+      {selectedNPC && displayInventory(selectedNPC)}
     </div>
+  </div>
   );
 }
