@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarMenuItem } from '@/components/ui/sidebar';
@@ -26,8 +28,13 @@ export default function Home() {
         try {
           let { data, error } = await supabase
             .from('items')
-            .select('*')
-            .eq('location', selectedLocation);
+            .select(`
+              *,
+              shopkeepers (
+                location
+              )
+            `)
+            .eq('shopkeepers.location', selectedLocation);
           
           if (error) throw error;
       
@@ -73,8 +80,8 @@ export default function Home() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {inventory.map((item) => (
-                <TableRow key={item.id}>
+              {inventory.map((item, index) => (
+                <TableRow key={index}>
                   <TableCell>{item.item_name}</TableCell>
                   <TableCell>{item.price}</TableCell>
                   <TableCell>{item.weight}</TableCell>
