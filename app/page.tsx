@@ -1,7 +1,9 @@
 'use client';
 
+import { useSession, useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
-import { supabase } from '@/utils/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
+
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Table, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 
@@ -29,13 +31,41 @@ export default function Home() {
   const [shopkeepers, setShopkeepers] = useState<Shopkeeper[]>([]);
   const [inventory, setInventory] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
+  const { session } = useSession();
+
+
+  function createClerkSupabaseClient() {
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          fetch: async (url, options = {}) => {
+            const clerkToken = await session?.getToken({
+              template: 'supabase',
+            })
+
+              const headers = new Headers(options?.headers)
+            headers.set('Authorization', `Bearer ${clerkToken}`)
+
+            return fetch(url, {
+              ...options,
+              headers,
+            })
+          }
+        }
+      }
+    )
+  }
+
+  const client = createClerkSupabaseClient()
 
   useEffect(() => {
     if (selectedLocation) {
       const fetchShopkeepers = async () => {
         setLoading(true);
         try {
-          const { data, error } = await supabase
+          const { data, error } = await client
             .from('shopkeepers')
             .select('*')
             .eq('location', selectedLocation);
@@ -57,7 +87,7 @@ export default function Home() {
       const fetchInventory = async () => {
         setLoading(true);
         try {
-          const { data, error } = await supabase
+          const { data, error } = await client
             .from('items')
             .select('*')
             .eq('shopkeeper_id', selectedShopkeeper);

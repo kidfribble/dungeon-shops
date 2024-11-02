@@ -7,7 +7,9 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/utils/supabaseClient';
+import { useSession, useUser } from '@clerk/nextjs';
+import { createClient } from '@supabase/supabase-js';
+
 import {
   ClerkProvider,
   SignInButton,
@@ -38,11 +40,41 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [shopData, setShopData] = useState<Shopkeeper[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const { isLoaded, isSignedIn, user } = useUser();
+  const { session } = useSession();
+  
+
+  function createClerkSupabaseClient() {
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          fetch: async (url, options = {}) => {
+            const clerkToken = await session?.getToken({
+              template: 'supabase',
+            })
+
+              const headers = new Headers(options?.headers)
+            headers.set('Authorization', `Bearer ${clerkToken}`)
+
+            return fetch(url, {
+              ...options,
+              headers,
+            })
+          }
+        }
+      }
+    )
+  }
+
+  const client = createClerkSupabaseClient()
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        let { data, error } = await supabase.from('shopkeepers').select('*');
+        let { data, error } = await client.from('shopkeepers').select('*');
         if (error) throw error;
         setShopData(data || []); // Ensures shopData is always an array
       } catch (error) {
@@ -57,23 +89,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <ClerkProvider>
-    <html lang="en">
-      <body>
-        <SignedOut>
-          <SignInButton />
-        </SignedOut>
-        <SignedIn>            
-          <SidebarProvider>
-            <AppSidebar />
-            <main>
-              <SidebarTrigger />
-              {loading ? <div>Loading...</div> : children}
-            </main>
-          </SidebarProvider>
-          <UserButton />
-        </SignedIn>
-      </body>
-    </html>
+      <html lang="en">
+        <body>
+          <SignedOut>
+            <SignInButton />
+          </SignedOut>
+          <SignedIn>            
+            <SidebarProvider>
+              <AppSidebar />
+              <main>
+                <SidebarTrigger />
+                {loading ? <div>Loading...</div> : children}
+              </main>
+            </SidebarProvider>
+            <UserButton />
+          </SignedIn>
+        </body>
+      </html>
     </ClerkProvider>
   )
 }
