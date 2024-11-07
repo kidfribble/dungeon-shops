@@ -29,18 +29,16 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+interface Shopkeeper {
+  id: number; // Update this to match your actual data structure
+  name: string; // Update this to match your actual data structure
+  // Add other fields as necessary
+}
 
-  interface Shopkeeper {
-    id: number; // Update this to match your actual data structure
-    name: string; // Update this to match your actual data structure
-    // Add other fields as necessary
-  }
+export default function RootLayout({ children }: { children: React.ReactNode }) {
 
   const [shopData, setShopData] = useState<Shopkeeper[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const { isLoaded, isSignedIn, user } = useUser();
   const { session } = useSession();
   
 
@@ -99,7 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <AppSidebar />
               <main>
                 <SidebarTrigger />
-                {loading ? <div>Loading...</div> : children}
+                <UserStatus loading={loading} shopData={shopData} />
               </main>
             </SidebarProvider>
             <UserButton />
@@ -108,4 +106,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </html>
     </ClerkProvider>
   )
+}
+
+function UserStatus({ loading, shopData }: { loading: boolean; shopData: Shopkeeper[] }) {
+  const { isLoaded } = useUser();
+
+  if (!isLoaded) {
+    return <div>Loading user...</div>;
+  }
+
+  return (
+      <main>
+        {loading ? <div>Loading...</div> : shopData.map(shopkeeper => (
+          <div key={shopkeeper.id}>{shopkeeper.name}</div>
+        ))}
+      </main>
+  );
 }
