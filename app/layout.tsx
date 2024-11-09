@@ -1,14 +1,9 @@
-"use client";
-
 import localFont from "next/font/local";
 import "./globals.css";
 
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
-
-import { useEffect, useState } from 'react';
-import { useSession, useUser } from '@clerk/nextjs';
-import { createClient } from '@supabase/supabase-js';
+import { useUser } from '@clerk/nextjs';
 
 import {
   ClerkProvider,
@@ -37,52 +32,26 @@ interface Shopkeeper {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 
-  const [shopData, setShopData] = useState<Shopkeeper[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { session } = useSession();
-  
+//   const [shopData, setShopData] = useState<Shopkeeper[]>([]);
+//   const [loading, setLoading] = useState(true);
 
-  function createClerkSupabaseClient() {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          fetch: async (url, options = {}) => {
-            const clerkToken = await session?.getToken({
-              template: 'supabase',
-            })
+//   const client = createClerkSupabaseClient()
 
-              const headers = new Headers(options?.headers)
-            headers.set('Authorization', `Bearer ${clerkToken}`)
-
-            return fetch(url, {
-              ...options,
-              headers,
-            })
-          }
-        }
-      }
-    )
-  }
-
-  const client = createClerkSupabaseClient()
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        let { data, error } = await client.from('shopkeepers').select('*');
-        if (error) throw error;
-        setShopData(data || []); // Ensures shopData is always an array
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       setLoading(true);
+//       try {
+//         let { data, error } = await client.from('shopkeepers').select('*');
+//         if (error) throw error;
+//         setShopData(data || []); // Ensures shopData is always an array
+//       } catch (error) {
+//         console.error(error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchData();
+//   }, []);
   
 
   return (
@@ -97,7 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <AppSidebar />
               <main>
                 <SidebarTrigger />
-                <UserStatus loading={loading} shopData={shopData} />
+                {children}
               </main>
             </SidebarProvider>
             <UserButton />

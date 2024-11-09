@@ -1,8 +1,7 @@
 'use client';
 
-import { useSession, useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClerkSupabaseClient } from '@/utils/supabaseClient';
 
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Table, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
@@ -31,32 +30,6 @@ export default function Home() {
   const [shopkeepers, setShopkeepers] = useState<Shopkeeper[]>([]);
   const [inventory, setInventory] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
-  const { session } = useSession();
-
-
-  function createClerkSupabaseClient() {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          fetch: async (url, options = {}) => {
-            const clerkToken = await session?.getToken({
-              template: 'supabase',
-            })
-
-              const headers = new Headers(options?.headers)
-            headers.set('Authorization', `Bearer ${clerkToken}`)
-
-            return fetch(url, {
-              ...options,
-              headers,
-            })
-          }
-        }
-      }
-    )
-  }
 
   const client = createClerkSupabaseClient()
 
