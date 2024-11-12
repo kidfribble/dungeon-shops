@@ -1,3 +1,5 @@
+'use client';
+
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -31,28 +33,6 @@ interface Shopkeeper {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-
-//   const [shopData, setShopData] = useState<Shopkeeper[]>([]);
-//   const [loading, setLoading] = useState(true);
-
-//   const client = createClerkSupabaseClient()
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       setLoading(true);
-//       try {
-//         let { data, error } = await client.from('shopkeepers').select('*');
-//         if (error) throw error;
-//         setShopData(data || []); // Ensures shopData is always an array
-//       } catch (error) {
-//         console.error(error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     fetchData();
-//   }, []);
-  
 
   return (
     <ClerkProvider>
