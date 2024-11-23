@@ -1,36 +1,18 @@
 'use client';
 
-import localFont from "next/font/local";
 import "./globals.css";
 
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
-import { useUser } from '@clerk/nextjs';
 
 import {
   ClerkProvider,
   SignInButton,
   SignedIn,
   SignedOut,
+  SignOutButton,
   UserButton
 } from '@clerk/nextjs'
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
-
-interface Shopkeeper {
-  id: number; // Update this to match your actual data structure
-  name: string; // Update this to match your actual data structure
-  // Add other fields as necessary
-}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 
@@ -50,25 +32,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </main>
             </SidebarProvider>
             <UserButton />
+            <SignOutButton />
           </SignedIn>
         </body>
       </html>
     </ClerkProvider>
   )
-}
-
-function UserStatus({ loading, shopData }: { loading: boolean; shopData: Shopkeeper[] }) {
-  const { isLoaded } = useUser();
-
-  if (!isLoaded) {
-    return <div>Loading user...</div>;
-  }
-
-  return (
-      <main>
-        {loading ? <div>Loading...</div> : shopData.map(shopkeeper => (
-          <div key={shopkeeper.id}>{shopkeeper.name}</div>
-        ))}
-      </main>
-  );
 }

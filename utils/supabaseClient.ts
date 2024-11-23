@@ -1,15 +1,7 @@
-import { useSession, useUser } from '@clerk/nextjs';
+'use client'
+
+import { useSession } from '@clerk/nextjs';
 import { createClient } from '@supabase/supabase-js';
-import { log } from 'console';
-
-// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-// const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-
-// if (!supabaseUrl || !supabaseAnonKey) {
-//   throw new Error("Missing Supabase URL or Anon Key");
-// }
-
-// export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export const createClerkSupabaseClient = function() {
     const { session } = useSession()
