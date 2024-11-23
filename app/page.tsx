@@ -6,7 +6,7 @@ import { createClerkSupabaseClient } from '@/utils/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Table, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
-import { useSession, useUser } from '@clerk/nextjs'
+import { useUser } from '@clerk/nextjs'
 import { useAuth } from '@clerk/nextjs'
 
 interface Item {
@@ -39,7 +39,11 @@ interface Shopkeeper {
 
 // Creating player inventories
 interface CurrentPlayer {
-  id: number;
+  id: string;
+  username: string;
+  currency: number;
+  inventory: [];
+  user_id: string;
 };
 
 export default function Home() {
@@ -50,18 +54,74 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   const [transaction, makeTransact] = useState<Transaction[]>([]);
+
+  const client = createClerkSupabaseClient();
+
+  const { user } = useUser();
+
+  const { isLoaded, userId: clarkId, sessionId, getToken } = useAuth();
   const [player, setPlayer] = useState<CurrentPlayer[]>([]);
 
-  const client = createClerkSupabaseClient()
+  useEffect(() => {
+    let isFetching = false;
 
-  const { user } = useUser()
+    const fetchOrCreatePlayer = async () => {
+      if (isFetching) return;
+      isFetching = true;
 
-  const { isLoaded, userId, sessionId, getToken } = useAuth()
+      if(!clarkId) return;
 
-  // In case the user signs out while on the page.
-  if (!isLoaded || !userId) {
-    return null
-  }
+      const { data: existingPlayer, error: fetchError } = await client  
+        .from('players')
+        .select('*')
+        .eq('user_id', clarkId)
+        .single();
+      
+      console.log('clark id: '+ clarkId);
+      
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching player:', fetchError.message);
+        return;
+      }
+
+      if (existingPlayer) {
+        setPlayer([{
+          id: existingPlayer.id,
+          username: existingPlayer.username,
+          currency: existingPlayer.currency,
+          inventory: [],
+          user_id: clarkId,
+        }]);
+        return;
+      }
+
+      const { data: newPlayer, error: insertError } = await client
+        .from('players')
+        .insert({
+          user_id: clarkId,
+          username: 'New player',
+          currency: 1000,
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Error creating player:', insertError.message)
+        return;
+      }
+
+      setPlayer([{
+        id: newPlayer.id,
+        username: newPlayer.username,
+        currency: newPlayer.currency,
+        inventory: [],
+        user_id: clarkId,
+      }]);
+
+    }
+
+    fetchOrCreatePlayer();
+  }, [clarkId])
 
   useEffect(() => {
     if (selectedLocation) {
@@ -99,6 +159,7 @@ export default function Home() {
             .from('items')
             .select('*')
             .eq('shopkeeper_id', selectedShopkeeper);
+            
             // will need to select shopkeeper name from here, pass it in for the heading
 
           if (error) throw error;
@@ -116,73 +177,6 @@ export default function Home() {
     }
   }, [selectedShopkeeper]);
 
-  // This `useEffect` will wait for the `user` object to be loaded before requesting
-  // the tasks for the logged in user
-  useEffect(() => {
-      if (!user) return
-
-      async function loadPlayer() {  
-      setLoading(true)
-
-      const id = "{userId}"
-      
-      
-
-      // Rewrite to update the CurrentPlayer interface with the clerkid
-      // and to use for sewing up inventory and handling currency exchanges (perhaps)
-      // may need to draw this out
-
-
-      // try {
-      //   const { data, error } = await client
-      //     .from('items')
-      //     .select('*')
-      //     .eq('shopkeeper_id', selectedShopkeeper);
-
-      //   if (error) throw error;
-      //   setPlayer(data as CurrentPlayer[]);
-
-      // } catch (error) {
-      //   console.error(error);
-
-      // } finally {
-      //   setLoading(false);
-
-      // }
-
-      loadPlayer();
-    }
-  }, [user])
-
-  useEffect(() => {
-    if (player) {
-      const fetchPlayerInventory = async () => {
-        setLoading(true);
-
-        try {
-          const { data, error } = await client
-            .from('player_inventories')
-            .select('*')
-            .eq('inventory', player);
-          
-            console.log(data)
-
-          if (error) throw error;
-          console.log(data)
-
-        } catch (error) {
-          console.error(error);
-
-        } finally {
-          setLoading(false);
-
-        }
-      };
-      fetchPlayerInventory();
-    }
-  }, [player]);
-
- 
   const currencyExchange = (number: number) => {
     // get this button working
     console.log(number);
@@ -190,6 +184,7 @@ export default function Home() {
     // use makeTransact to send the credit and debits record to the database
     // update Transaction with debits and credits
     // exchange items between inventories
+    // reference below
 
     // interface Transaction {
     //   id: string;
@@ -228,9 +223,20 @@ export default function Home() {
           )}
         </SidebarContent>
       </Sidebar>
+      <div className='player-information'>
+        {player.map((p) => (
+          <div>
+            <p>Player ID: {p.id}</p>
+            <p>Username: {p.username}</p>
+            <p>Currency: {p.currency}</p>
+            <p>Inventory: {p.inventory.join('. ')}</p>
+          </div>
+        ))}
+        <h2></h2>
+      </div>
       <div className="flex-grow p-8">
         {/* Show shopkeeper name clearly, shopkeeper coin, and player coin */}
-        <h1>{selectedShopkeeper}</h1>
+        <h1>{selectedShopkeeper}'s Excellent Shop</h1>
         {loading ? (
           <div>Loading...</div>
         ) : (
@@ -238,7 +244,7 @@ export default function Home() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Welcome, {userId}</TableCell>
+                  <TableCell>Welcome</TableCell>
                   <TableCell>Item Name</TableCell>
                   <TableCell>Price</TableCell>
                   <TableCell>Weight</TableCell>
